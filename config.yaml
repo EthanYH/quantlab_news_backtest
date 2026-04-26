@@ -38,15 +38,7 @@ reddit:
     - 'binance OR coinbase OR microstrategy'
   subreddits:
     - CryptoCurrency
-    - Bitcoin
     - ethereum
-    - CryptoMarkets
-    - ethfinance
-    - BitcoinMarkets
-    - btc
-    - ethtrader
-    - solana
-    - XRP
   limit: 100
   time_filter: month
 
