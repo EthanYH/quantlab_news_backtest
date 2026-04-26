@@ -1,0 +1,56 @@
+market: KRW-BTC
+start: '2025-01-01'
+end: '2026-04-25'
+entry_time: '08:50'
+decision_hour: 9
+take_profit_pct: 0.01
+stop_loss_pct: 0.01
+max_hold_hours: 24
+fee_rate: 0.0005
+sentiment_threshold: 0.15
+min_article_count: 2
+min_positive_ratio: 0.2
+max_negative_count:
+
+news_query: '(bitcoin OR btc OR cryptocurrency OR crypto OR ethereum OR eth OR xrp OR binance OR "spot bitcoin etf" OR "crypto regulation") -football -baseball -softball -basketball'
+
+google_news:
+  query: '(bitcoin OR btc OR cryptocurrency OR crypto OR ethereum OR eth OR xrp OR binance OR "spot bitcoin etf" OR "crypto regulation") -football -baseball -softball -basketball'
+  queries:
+    - 'bitcoin OR btc -football -baseball -softball -basketball'
+    - 'ethereum OR eth OR "ether etf" -football -baseball -softball -basketball'
+    - 'xrp OR ripple OR solana OR crypto -football -baseball -softball -basketball'
+    - '"spot bitcoin etf" OR "bitcoin etf" OR "crypto etf"'
+    - '"crypto regulation" OR "sec crypto" OR "stablecoin" OR "digital assets"'
+    - 'binance OR coinbase OR microstrategy OR "strategy bitcoin"'
+  hl: en-US
+  gl: US
+  ceid: US:en
+
+reddit:
+  query: 'bitcoin OR btc OR cryptocurrency OR crypto OR ethereum OR eth OR xrp OR binance OR "spot bitcoin etf" OR "crypto regulation"'
+  queries:
+    - 'bitcoin OR btc'
+    - 'ethereum OR eth'
+    - 'xrp OR ripple OR solana'
+    - 'crypto OR cryptocurrency'
+    - 'bitcoin etf OR spot bitcoin etf OR crypto regulation'
+    - 'binance OR coinbase OR microstrategy'
+  subreddits:
+    - CryptoCurrency
+    - Bitcoin
+    - ethereum
+    - CryptoMarkets
+    - ethfinance
+    - BitcoinMarkets
+    - btc
+    - ethtrader
+    - solana
+    - XRP
+  limit: 100
+  time_filter: month
+
+twitter:
+  query: '(bitcoin OR btc OR cryptocurrency OR crypto OR ethereum OR eth OR xrp OR "spot bitcoin etf" OR "crypto regulation") -is:retweet'
+  max_results: 100
+  lang: en
