@@ -41,7 +41,11 @@ def stats_row(
         }
 
     scored = add_sentiment(news)
-    feat = daily_features(scored, cutoff_time=cfg["entry_time"])
+    feat = daily_features(
+        scored,
+        cutoff_time=cfg["entry_time"],
+        signal_window=cfg.get("signal_window", "cutoff_to_cutoff"),
+    )
     trades, stats = run_backtest(
         price,
         feat,

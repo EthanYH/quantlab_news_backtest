@@ -62,6 +62,9 @@ Source settings live in `config.yaml` under `google_news`, `reddit`, and `twitte
 
 ## Daily Telegram Signal
 
+The daily signal uses all news available before the decision cutoff. For example,
+the 08:50 signal on April 28 uses news from April 27 08:50 through April 28 08:50 KST.
+
 Set Telegram credentials:
 
 ```bash

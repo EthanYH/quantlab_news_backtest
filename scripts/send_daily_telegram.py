@@ -49,7 +49,13 @@ def signal_mask(row: pd.Series, cfg: dict) -> bool:
     return ok
 
 
-def build_message(window_news: pd.DataFrame, cfg: dict, now: pd.Timestamp) -> str:
+def build_message(
+    window_news: pd.DataFrame,
+    cfg: dict,
+    signal_time: pd.Timestamp,
+    window_start: pd.Timestamp,
+    window_end: pd.Timestamp,
+) -> str:
     scored = add_sentiment(window_news)
     article_count = len(scored)
     positive_count = int((scored["sent_label"] == "pos").sum())
@@ -67,8 +73,8 @@ def build_message(window_news: pd.DataFrame, cfg: dict, now: pd.Timestamp) -> st
     title = "BUY signal" if should_enter else "NO TRADE"
     lines = [
         f"[QuantLab] {title}",
-        f"time: {now.strftime('%Y-%m-%d %H:%M %Z')}",
-        f"window: previous cutoff -> current {cfg['entry_time']}",
+        f"time: {signal_time.strftime('%Y-%m-%d %H:%M %Z')}",
+        f"window: {window_start.strftime('%Y-%m-%d %H:%M')} -> {window_end.strftime('%Y-%m-%d %H:%M')} KST",
         "",
         f"articles: {article_count}",
         f"sentiment_mean: {sentiment_mean:.4f}",
@@ -128,11 +134,19 @@ def main() -> None:
 
     now = pd.Timestamp.now(tz="Asia/Seoul")
     cutoff_h, cutoff_m = map(int, cfg["entry_time"].split(":"))
-    cutoff = now.normalize() + pd.Timedelta(hours=cutoff_h, minutes=cutoff_m)
-    if now < cutoff:
-        cutoff = cutoff - pd.Timedelta(days=1)
-    window_start = cutoff - pd.Timedelta(days=1)
-    window_end = cutoff
+    signal_time = now.normalize() + pd.Timedelta(hours=cutoff_h, minutes=cutoff_m)
+    if now < signal_time:
+        signal_time = signal_time - pd.Timedelta(days=1)
+
+    signal_window = cfg.get("signal_window", "cutoff_to_cutoff")
+    if signal_window == "previous_day":
+        window_start = signal_time.normalize() - pd.Timedelta(days=1)
+        window_end = signal_time.normalize()
+    elif signal_window == "cutoff_to_cutoff":
+        window_start = signal_time - pd.Timedelta(days=1)
+        window_end = signal_time
+    else:
+        raise ValueError(f"Unknown signal_window: {signal_window}")
 
     news = collect_reddit(cfg)
     if news.empty:
@@ -144,7 +158,7 @@ def main() -> None:
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
     window_news.to_csv(args.out, index=False, encoding="utf-8-sig")
 
-    message = build_message(window_news, cfg, cutoff)
+    message = build_message(window_news, cfg, signal_time, window_start, window_end)
     if args.dry_run:
         print(message)
     else:

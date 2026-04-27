@@ -48,12 +48,19 @@ def add_sentiment(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def daily_features(news: pd.DataFrame, cutoff_time: str = "08:50") -> pd.DataFrame:
-    """Build features available by cutoff_time. Signal date means trading date at cutoff_time."""
+def daily_features(
+    news: pd.DataFrame,
+    cutoff_time: str = "08:50",
+    signal_window: str = "cutoff_to_cutoff",
+) -> pd.DataFrame:
+    """Build daily signal features.
+
+    signal_window="previous_day" means calendar-day news on D becomes the signal for D+1.
+    signal_window="cutoff_to_cutoff" keeps the older rolling cutoff behavior.
+    """
     time_col = "published_at" if "published_at" in news.columns else "time"
     df = news.dropna(subset=[time_col]).copy()
     df["published_at"] = pd.to_datetime(df[time_col])
-    cutoff_h, cutoff_m = map(int, cutoff_time.split(":"))
 
     if df["published_at"].dt.tz is not None:
         local = df["published_at"].dt.tz_convert("Asia/Seoul")
@@ -61,14 +68,20 @@ def daily_features(news: pd.DataFrame, cutoff_time: str = "08:50") -> pd.DataFra
         local = df["published_at"]
 
     base_date = local.dt.date
-    after_cutoff = (
-        (local.dt.hour > cutoff_h)
-        | ((local.dt.hour == cutoff_h) & (local.dt.minute > cutoff_m))
-    )
-    df["signal_date"] = pd.to_datetime(base_date) + pd.to_timedelta(
-        after_cutoff.astype(int),
-        unit="D",
-    )
+    if signal_window == "previous_day":
+        df["signal_date"] = pd.to_datetime(base_date) + pd.Timedelta(days=1)
+    elif signal_window == "cutoff_to_cutoff":
+        cutoff_h, cutoff_m = map(int, cutoff_time.split(":"))
+        after_cutoff = (
+            (local.dt.hour > cutoff_h)
+            | ((local.dt.hour == cutoff_h) & (local.dt.minute > cutoff_m))
+        )
+        df["signal_date"] = pd.to_datetime(base_date) + pd.to_timedelta(
+            after_cutoff.astype(int),
+            unit="D",
+        )
+    else:
+        raise ValueError(f"Unknown signal_window: {signal_window}")
     g = df.groupby("signal_date")
     feat = g.agg(
         article_count=("sentiment", "size"),

@@ -19,7 +19,11 @@ cfg = yaml.safe_load(open(args.config, encoding="utf-8"))
 price = pd.read_csv(args.price)
 news = pd.read_csv(args.news)
 news = add_sentiment(news)
-feat = daily_features(news, cutoff_time=cfg["entry_time"])
+feat = daily_features(
+    news,
+    cutoff_time=cfg["entry_time"],
+    signal_window=cfg.get("signal_window", "cutoff_to_cutoff"),
+)
 rel = relation_report(price, feat)
 trades, stats = run_backtest(
     price, feat,
