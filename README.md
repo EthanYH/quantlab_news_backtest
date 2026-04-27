@@ -60,6 +60,40 @@ python scripts/collect_news.py --source all --keep-going --out data/raw/news.csv
 
 Source settings live in `config.yaml` under `google_news`, `reddit`, and `twitter`.
 
+## Daily Telegram Signal
+
+Set Telegram credentials:
+
+```bash
+export TELEGRAM_BOT_TOKEN="..."
+export TELEGRAM_CHAT_ID="..."
+```
+
+Test without sending:
+
+```bash
+python scripts/send_daily_telegram.py --dry-run
+```
+
+Send once:
+
+```bash
+python scripts/send_daily_telegram.py
+```
+
+Run every day at 08:50 on Raspberry Pi:
+
+```bash
+mkdir -p logs
+crontab -e
+```
+
+Add one line:
+
+```cron
+50 8 * * * cd /home/yonghan1205/quantlab_news_backtest && . .venv/bin/activate && TELEGRAM_BOT_TOKEN="..." TELEGRAM_CHAT_ID="..." python scripts/send_daily_telegram.py >> logs/daily_telegram.log 2>&1
+```
+
 네이버 뉴스 API 사용 시:
 
 ```bash
